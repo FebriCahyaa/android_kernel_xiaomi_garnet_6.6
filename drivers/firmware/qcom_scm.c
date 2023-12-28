@@ -1561,6 +1561,11 @@ static int qcom_scm_probe(struct platform_device *pdev)
 
 	__get_convention();
 
+	if (scm->dload_mode_addr &&
+	    IS_ERR(platform_device_register_data(&pdev->dev, "qcom-dload-mode",
+						 PLATFORM_DEVID_NONE, NULL, 0)))
+		dev_err(&pdev->dev, "failed to register qcom dload device\n");
+
 	/*
 	 * If requested enable "download mode", from this point on warmboot
 	 * will cause the boot stages to enter download mode, unless
