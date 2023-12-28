@@ -425,7 +425,23 @@ static int __qcom_scm_set_dload_mode(struct device *dev, bool enable)
 	return qcom_scm_call_atomic(__scm->dev, &desc, NULL);
 }
 
-static void qcom_scm_set_download_mode(bool enable)
+static int __qcom_scm_set_download_mode(struct device *dev,
+					enum qcom_download_mode mode)
+{
+	struct qcom_scm_desc desc = {
+		.svc = QCOM_SCM_SVC_BOOT,
+		.cmd = QCOM_SCM_BOOT_SET_DLOAD_MODE,
+		.arginfo = QCOM_SCM_ARGS(2),
+		.args[0] = mode,
+		.owner = ARM_SMCCC_OWNER_SIP,
+	};
+
+	desc.args[1] = 0;
+
+	return qcom_scm_call_atomic(dev, &desc, NULL);
+}
+
+static void qcom_scm_set_download_mode_legacy(bool enable)
 {
 	bool avail;
 	int ret = 0;
@@ -446,6 +462,75 @@ static void qcom_scm_set_download_mode(bool enable)
 	if (ret)
 		dev_err(__scm->dev, "failed to set download mode: %d\n", ret);
 }
+
+/**
+ * qcom_scm_set_download_mode() - Set the download mode for warm boots
+ * @mode: download mode to configure
+ */
+void qcom_scm_set_download_mode(enum qcom_download_mode mode)
+{
+	bool avail;
+	int ret = 0;
+	struct device *dev = __scm ? __scm->dev : NULL;
+
+	avail = __qcom_scm_is_call_available(dev, QCOM_SCM_SVC_BOOT,
+					     QCOM_SCM_BOOT_SET_DLOAD_MODE);
+	if (avail) {
+		ret = __qcom_scm_set_download_mode(dev, mode);
+	} else if (__scm && __scm->dload_mode_addr) {
+		ret = qcom_scm_io_writel(__scm->dload_mode_addr, mode);
+	} else {
+		dev_err(dev,
+			"No available mechanism for setting download mode\n");
+	}
+
+	if (ret)
+		dev_err(dev, "failed to set download mode: %d\n", ret);
+}
+EXPORT_SYMBOL_GPL(qcom_scm_set_download_mode);
+
+/**
+ * qcom_scm_get_download_mode() - Read the currently configured download mode
+ * @mode: returned download mode
+ */
+int qcom_scm_get_download_mode(unsigned int *mode)
+{
+	int ret = -EINVAL;
+	struct device *dev = __scm ? __scm->dev : NULL;
+
+	if (__scm && __scm->dload_mode_addr)
+		ret = qcom_scm_io_readl(__scm->dload_mode_addr, mode);
+	else
+		dev_err(dev,
+			"No available mechanism for getting download mode\n");
+
+	if (ret)
+		dev_err(dev, "failed to get download mode: %d\n", ret);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(qcom_scm_get_download_mode);
+
+/**
+ * qcom_scm_disable_sdi() - Disable secure debug interface
+ */
+void qcom_scm_disable_sdi(void)
+{
+	int ret;
+	struct qcom_scm_desc desc = {
+		.svc = QCOM_SCM_SVC_BOOT,
+		.cmd = QCOM_SCM_BOOT_WDOG_DEBUG_PART,
+		.owner = ARM_SMCCC_OWNER_SIP,
+		.args[0] = 1,
+		.args[1] = 0,
+		.arginfo = QCOM_SCM_ARGS(2),
+	};
+
+	ret = qcom_scm_call_atomic(__scm ? __scm->dev : NULL, &desc, NULL);
+	if (ret)
+		pr_err("Failed to disable secure wdog debug: %d\n", ret);
+}
+EXPORT_SYMBOL(qcom_scm_disable_sdi);
 
 /**
  * qcom_scm_pas_init_image() - Initialize peripheral authentication service
@@ -1482,7 +1567,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
 	 * disabled below by a clean shutdown/reboot.
 	 */
 	if (download_mode)
-		qcom_scm_set_download_mode(true);
+		qcom_scm_set_download_mode_legacy(true);
 
 	return 0;
 }
@@ -1490,7 +1575,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
 static void qcom_scm_shutdown(struct platform_device *pdev)
 {
 	/* Clean shutdown, disable download mode to allow normal restart */
-	qcom_scm_set_download_mode(false);
+	qcom_scm_set_download_mode_legacy(false);
 }
 
 static const struct of_device_id qcom_scm_dt_match[] = {

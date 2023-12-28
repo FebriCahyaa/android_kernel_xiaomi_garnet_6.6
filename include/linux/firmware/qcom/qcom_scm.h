@@ -16,6 +16,13 @@
 #define QCOM_SCM_CPU_PWR_DOWN_L2_OFF	0x1
 #define QCOM_SCM_HDCP_MAX_REQ_CNT	5
 
+enum qcom_download_mode {
+	QCOM_DOWNLOAD_NODUMP    = 0x00,
+	QCOM_DOWNLOAD_EDL       = 0x01,
+	QCOM_DOWNLOAD_FULLDUMP  = 0x10,
+	QCOM_DOWNLOAD_MINIDUMP  = 0x20,
+};
+
 struct qcom_scm_hdcp_req {
 	u32 addr;
 	u32 val;
@@ -64,6 +71,9 @@ extern bool qcom_scm_is_available(void);
 extern int qcom_scm_set_cold_boot_addr(void *entry);
 extern int qcom_scm_set_warm_boot_addr(void *entry);
 extern void qcom_scm_cpu_power_down(u32 flags);
+extern void qcom_scm_disable_sdi(void);
+extern void qcom_scm_set_download_mode(enum qcom_download_mode mode);
+extern int qcom_scm_get_download_mode(unsigned int *mode);
 extern int qcom_scm_set_remote_state(u32 state, u32 id);
 
 struct qcom_scm_pas_metadata {
