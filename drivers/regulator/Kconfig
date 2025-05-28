@@ -1665,4 +1665,10 @@ config REGULATOR_QCOM_LABIBB
 	  boost regulator and IBB can be used as a negative boost regulator
 	  for LCD display panel.
 
+
+config REGULATOR_WL2866D_N16
+	tristate "Xiaomi WL2866D regulator Driver"
+	help
+	  This driver provides support for the pmic regulator WL2866.
+
 endif
