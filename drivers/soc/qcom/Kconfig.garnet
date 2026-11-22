@@ -1,0 +1,56 @@
+# QTI PMIC Glink symbols used by the Xiaomi garnet charger stack.
+# Extracted from the CLO-derived bp4a-6.6 tree.
+
+config QTI_PMIC_GLINK
+	tristate "Enable support for PMIC GLINK"
+	depends on RPMSG
+	select QCOM_RPROC_COMMON
+	select QCOM_PDR_HELPERS
+	help
+	  The PMIC Glink driver provides the interface for clients to
+	  communicate over GLink for sending and receiving data to charger
+	  firmware that runs on a remote subsystem like DSP which supports
+	  charging and gauging.
+	  This enables clients to read and write battery charging parameters.
+
+
+config QTI_ALTMODE_GLINK
+	tristate "Type-C alternate mode over GLINK"
+	depends on QTI_PMIC_GLINK
+	help
+	  The Qualcomm Technologies, Inc. Type-C alternate mode driver provides
+	  an interface for Type-C alternate mode clients to receive data such
+	  as Pin Assignment Notifications from the Type-C stack running on a
+	  remote subsystem (e.g. DSP) via the PMIC GLINK interface.
+
+
+config QTI_BATTERY_GLINK_DEBUG
+	tristate "Enable support for QTI battery glink debug driver"
+	depends on QTI_PMIC_GLINK
+	help
+	  Qualcomm Technologies, Inc. battery glink debug driver helps to
+	  obtain debug information for battery charging and gauging over PMIC
+	  Glink from charger and gauging firmware running on a remote subsystem
+	  (e.g. DSP).
+
+
+config QTI_CHARGER_ULOG_GLINK
+	tristate "Enable support for QTI charger ulog glink driver"
+	depends on QTI_PMIC_GLINK && DEBUG_FS
+	help
+	  Qualcomm Technologies, Inc. charger ulog glink driver helps to
+	  obtain ulogs from battery charging and gauging stack over PMIC
+	  Glink from the charger firmware running on a remote subsystem
+	  (e.g. DSP).
+
+
+config QTI_PMIC_GLINK_DEBUG
+	tristate "QTI PMIC Glink Debug Device"
+	depends on QTI_PMIC_GLINK
+	help
+	  The Qualcomm Technologies, Inc. PMIC Glink debug device driver
+	  provides an interface to read and write PMIC registers over PMIC
+	  Glink using a remote subsytem (e.g. DSP).  This allows for debugging
+	  PMIC peripherals that would typically only be accessible to the
+	  charger and fuel gauging firmware running on the remote subsystem.
+	  The PMIC peripherals' bus access can be either SPMI or I2C.
