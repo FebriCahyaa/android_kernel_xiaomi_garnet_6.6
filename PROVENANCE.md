@@ -129,6 +129,24 @@ and `certs/qcom_x509.genkey` come from the 6.6 reference tree; the fragment's
 `CONFIG_LOCALVERSION="-debug"` only affects the debug consolidate variant and
 does not change the shipping `perf` config.
 
+## Garnet Parts charging integration
+
+`FebriCahyaa/packages_apps_XiaomiParts` branch `garnet-6.6` drives the charging
+nodes exported by `drivers/power/supply/qti_battery_charger_xiaomi.c` and
+`drivers/thermal/mi_thermal_interface.c`:
+
+- `input_suspend` — bypass charging (XM_PROP_INPUT_SUSPEND).
+- `sport_mode` + `thermal_message/charger_temp` — wired fast charge boost
+  (XM_PROP_SPORT_MODE and the thermal driver's charger temperature hint).
+- `fastchg_mode` and `quick_charge_type` — read-only negotiation status.
+- `pd_verifed` — experimental charger authentication nudge, opt-in in the app.
+
+A small read-only attribute, `garnet_charge_status`, was added to the
+`qcom-battery` class. It reports `bypass=`, `boost=` and `fastchg=` from the
+same three properties so userspace can verify the effective mode with one
+read. It does not change charging behaviour; the app falls back to the
+individual nodes if the attribute is absent.
+
 ## License
 
 GPL-2.0, as defined by the Linux kernel. See `COPYING` and `LICENSES/`.

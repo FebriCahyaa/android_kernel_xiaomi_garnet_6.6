@@ -1935,6 +1935,34 @@ static ssize_t fastchg_mode_show(const struct class *c,
 }
 static CLASS_ATTR_RO(fastchg_mode);
 
+/* Garnet Parts: single read-only view of the charging mode for userspace. */
+static ssize_t garnet_charge_status_show(const struct class *c,
+					const struct class_attribute *attr, char *buf)
+{
+	struct battery_chg_dev *bcdev = container_of(c, struct battery_chg_dev,
+						battery_class);
+	struct psy_state *pst = &bcdev->psy_list[PSY_TYPE_XM];
+	int rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_INPUT_SUSPEND);
+	if (rc < 0)
+		return rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_SPORT_MODE);
+	if (rc < 0)
+		return rc;
+
+	rc = read_property_id(bcdev, pst, XM_PROP_FASTCHGMODE);
+	if (rc < 0)
+		return rc;
+
+	return scnprintf(buf, PAGE_SIZE, "bypass=%u boost=%u fastchg=%u\n",
+			 pst->prop[XM_PROP_INPUT_SUSPEND],
+			 pst->prop[XM_PROP_SPORT_MODE],
+			 pst->prop[XM_PROP_FASTCHGMODE]);
+}
+static CLASS_ATTR_RO(garnet_charge_status);
+
 static ssize_t apdo_max_show(const struct class *c,
                                         const struct class_attribute *attr, char *buf)
 {
@@ -4921,6 +4949,7 @@ static struct attribute *xiaomi_battery_class_attrs[] = {
 	&class_attr_cc_orientation.attr,
 	&class_attr_input_suspend.attr,
 	&class_attr_fastchg_mode.attr,
+	&class_attr_garnet_charge_status.attr,
 	&class_attr_night_charging.attr,
 #ifndef CONFIG_MI_CHARGER_M81
 	&class_attr_blank_status.attr,
