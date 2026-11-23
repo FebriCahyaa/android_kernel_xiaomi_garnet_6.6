@@ -149,8 +149,9 @@ individual nodes if the attribute is absent.
 
 ## Garnet Unified Memory Management (UMM)
 
-`arch/arm64/configs/consolidate.fragment` and
-`arch/arm64/configs/vendor/kera_le.config` now both enable `CONFIG_SWAP`,
+`arch/arm64/configs/consolidate.fragment`,
+`arch/arm64/configs/vendor/kera_le.config` and
+`arch/arm64/configs/vendor/garnet_GKI.config` now all enable `CONFIG_SWAP`,
 `CONFIG_ZRAM=y` with the LZ4 default compressor, `CONFIG_ZRAM_WRITEBACK`,
 `CONFIG_ZSMALLOC` and `CONFIG_DMABUF_SYSFS_STATS`. The vendor file matters
 because `build.config.msm.kera.le`, documented in `README.md`, builds from
@@ -165,12 +166,13 @@ validates that the chosen block device exists and is not mounted, then writes
 `disable` and `status`. This keeps a typo from turning a mounted partition
 into swap.
 
-Both config files previously overrode the identity: the GKI fragment used
-`CONFIG_LOCALVERSION="-debug"` and `vendor/kera_le.config` used `"-perf"`.
-Fragments are applied last, so both now use `-ZairenOX-Oz1B` and the release
-string stays `6.6.162-ZairenOX-Oz1B` in either build path.
+Two of the config files previously overrode the identity: the GKI fragment
+used `CONFIG_LOCALVERSION="-debug"` and `vendor/kera_le.config` used `"-perf"`.
+Fragments are applied last, so all three now use `-ZairenOX-Oz1B` and the
+release string stays `6.6.162-ZairenOX-Oz1B` in every build path, including the
+LineageOS 24.0 device tree, which applies `vendor/garnet_GKI.config` last.
 
-For CPU behaviour both files also enable `CONFIG_CPU_FREQ_GOV_SCHEDUTIL`,
+For CPU behaviour all three files also enable `CONFIG_CPU_FREQ_GOV_SCHEDUTIL`,
 `CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL` and
 `CONFIG_CPU_FREQ_GOV_PERFORMANCE`. `qcom-cpufreq-hw` reads the EPSS LUT from
 firmware, so no CPU frequency value is hard-coded in DTS or config.
