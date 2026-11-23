@@ -55,8 +55,9 @@ Imported paths:
   `static bool` path and gains the vendor enum API alongside it, while
   `drivers/power/reset/qcom-dload-mode.c`, its Kconfig/Makefile entries and
   `include/soc/qcom/minidump.h` come from the CLO-derived tree.
-- Root/hiding features (`KSU`, `KSU_SUSFS*`, `NOMOUNT`, custom
-  `CONFIG_LOCALVERSION`) are intentionally excluded.
+- Root/hiding features (`KSU`, `KSU_SUSFS*`, `NOMOUNT`) and the community
+  tree's custom `CONFIG_LOCALVERSION` are intentionally excluded. The only
+  local version suffix is our own branding, set below.
 
 ## Garnet performance and feature tuning
 
@@ -86,6 +87,15 @@ Deliberately not imported as no-ops or out of scope:
   `CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3`, which was removed from kbuild in
   2022 and is undefined on this 6.6 base as well as on the reference tree.
   It was reverted here instead of carrying a dead config symbol.
+
+## Kernel identity
+
+- `Makefile` sets `NAME = ZairenOX` (replacing the AOSP codename
+  `Pinguïn Aangedreven`).
+- `arch/arm64/configs/gki_defconfig` sets
+  `CONFIG_LOCALVERSION="-ZairenOX-Oz1B"` (replacing the AOSP `-4k` suffix),
+  so the release string is `6.6.162-ZairenOX-Oz1B`.
+- Commit: `b878832443c9` (`kernel: apply ZairenOX name and Oz1B version`).
 
 ## Modules and devicetrees integration
 
