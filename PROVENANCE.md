@@ -35,11 +35,28 @@ Imported paths:
 - root `*.bzl` (target variants, `kera_le`, `msm_*`, etc.)
 - `arch/arm64/configs/vendor/*`, excluding `garnet_*`
 
-## Deliberately not included yet
+## Android Security Bulletin baseline
 
-- Xiaomi garnet device patches (thermal control, battery charger properties,
-  fingerprint/FOD drivers) and any root solution. These will be added later as
-  separate, individually attributed commits.
+- Newest tagged ASB baseline for this series: `ASB-2026-11-02_15-6.6`
+  (Linux `6.6.144`, commit `33f64c1712cc700513431ed498b35db84c20d411`).
+- That tag is already an ancestor of the `6.6.162` base above, so merging it
+  would be a no-op. Future upstream syncs should track `android15-6.6-lts`
+  (currently the same commit as the base) and pick up later ASB tags when they
+  are published.
+- URL: https://android.googlesource.com/kernel/common/+/refs/tags/ASB-2026-11-02_15-6.6
+
+## Garnet device and vendor additions
+
+- Xiaomi garnet device patches (thermal, hardware ID, charger stack, panel/FOD
+  and related config) are imported as individual commits with their original
+  authors preserved.
+- The Qualcomm download-mode stack was backported manually against the AOSP
+  `6.6.162` SCM driver: `drivers/firmware/qcom_scm.c` keeps the upstream
+  `static bool` path and gains the vendor enum API alongside it, while
+  `drivers/power/reset/qcom-dload-mode.c`, its Kconfig/Makefile entries and
+  `include/soc/qcom/minidump.h` come from the CLO-derived tree.
+- Root/hiding features (`KSU`, `KSU_SUSFS*`, `NOMOUNT`, custom
+  `CONFIG_LOCALVERSION`) are intentionally excluded.
 
 ## License
 
