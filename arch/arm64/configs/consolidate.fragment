@@ -91,3 +91,9 @@ CONFIG_ZRAM_DEF_COMP_LZ4=y
 CONFIG_ZRAM_WRITEBACK=y
 CONFIG_ZSMALLOC=y
 CONFIG_DMABUF_SYSFS_STATS=y
+
+# Garnet CPU performance: use scheduler-driven scaling by default. The vendor
+# kera_le config carries the same options for build.config.msm.kera.le.
+CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y

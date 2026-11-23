@@ -149,11 +149,15 @@ individual nodes if the attribute is absent.
 
 ## Garnet Unified Memory Management (UMM)
 
-`arch/arm64/configs/consolidate.fragment` now enables `CONFIG_SWAP`,
+`arch/arm64/configs/consolidate.fragment` and
+`arch/arm64/configs/vendor/kera_le.config` now both enable `CONFIG_SWAP`,
 `CONFIG_ZRAM=y` with the LZ4 default compressor, `CONFIG_ZRAM_WRITEBACK`,
-`CONFIG_ZSMALLOC` and `CONFIG_DMABUF_SYSFS_STATS`. LZ4 keeps reclaim cheap on
-the LPDDR4X memory; writeback lets cold zram pages move to the UFS 2.2
-controller when userspace explicitly configures a backing device.
+`CONFIG_ZSMALLOC` and `CONFIG_DMABUF_SYSFS_STATS`. The vendor file matters
+because `build.config.msm.kera.le`, documented in `README.md`, builds from
+`generic_le_defconfig` plus `vendor/kera_le.config`, not from the GKI fragment.
+LZ4 keeps reclaim cheap on the LPDDR4X memory; writeback lets cold zram pages
+move to the UFS 2.2 controller when userspace explicitly configures a backing
+device.
 
 `scripts/garnet_umm_setup.sh` is a manual helper (never run at boot). It
 validates that the chosen block device exists and is not mounted, then writes
@@ -161,10 +165,15 @@ validates that the chosen block device exists and is not mounted, then writes
 `disable` and `status`. This keeps a typo from turning a mounted partition
 into swap.
 
-The same fragment previously set `CONFIG_LOCALVERSION="-debug"`, which overrode
-the identity set in `gki_defconfig` because merge_config applies fragments
-last. It now uses `-ZairenOX-Oz1B` so the release string stays
-`6.6.162-ZairenOX-Oz1B`.
+Both config files previously overrode the identity: the GKI fragment used
+`CONFIG_LOCALVERSION="-debug"` and `vendor/kera_le.config` used `"-perf"`.
+Fragments are applied last, so both now use `-ZairenOX-Oz1B` and the release
+string stays `6.6.162-ZairenOX-Oz1B` in either build path.
+
+For CPU behaviour both files also enable `CONFIG_CPU_FREQ_GOV_SCHEDUTIL`,
+`CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL` and
+`CONFIG_CPU_FREQ_GOV_PERFORMANCE`. `qcom-cpufreq-hw` reads the EPSS LUT from
+firmware, so no CPU frequency value is hard-coded in DTS or config.
 
 UMM is our project policy name, not an upstream Linux/Android standard. Its
 contract is documented in `UMM.md`; no upstream file was re-labelled as such.

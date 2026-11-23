@@ -25,7 +25,9 @@ from a root shell, and the app only reports its state.
 - `CONFIG_ZRAM=y` with `CONFIG_ZRAM_DEF_COMP_LZ4=y` and `CONFIG_ZRAM_WRITEBACK=y`.
 - `CONFIG_DMABUF_SYSFS_STATS=y` for Tier 4 visibility.
 
-These are set in `arch/arm64/configs/consolidate.fragment`.
+These are set in both `arch/arm64/configs/consolidate.fragment` and
+`arch/arm64/configs/vendor/kera_le.config`. The latter is the fragment used by
+the `build.config.msm.kera.le` build documented in `README.md`.
 
 ## Device-tree requirement
 
