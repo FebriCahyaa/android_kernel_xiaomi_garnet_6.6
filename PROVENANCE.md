@@ -87,6 +87,38 @@ Deliberately not imported as no-ops or out of scope:
   2022 and is undefined on this 6.6 base as well as on the reference tree.
   It was reverted here instead of carrying a dead config symbol.
 
+## Modules and devicetrees integration
+
+The companion repositories are based on the `bp4a-6.6` branches of
+`project-sm7435` and are available as `garnet-6.6` forks:
+
+- `FebriCahyaa/android_kernel_xiaomi_sm7435-modules`
+- `FebriCahyaa/android_kernel_xiaomi_sm7435-devicetrees`
+
+The following integration commits were authored locally (these are
+integration changes for our own kernel, not upstream code):
+
+- `6257aa1d0b86` — `arm64: dts: Add vendor devicetrees symlink for 6.6`.
+  Preserves the original author of the reference-tree commit, since this is a
+  verbatim import of the upstream 6.6 symlink.
+- `55c39003c2ce` — `scripts: add garnet module UAPI install helper`.
+- `d7fb3b78e296` — `Makefile: export UAPI headers from garnet modules`.
+- `b1709f434533` — `BUILD.bazel: enable msm platform and consolidate targets`.
+- `a9abd990dd9c` — `build: add consolidate build config and signing key for msm targets`.
+
+`headers_install` now calls `scripts/garnet_install_module_uapi.sh` and walks
+`ext-mod-dirs` so UAPI headers from `qcom/opensource/{audio-kernel,dataipa,
+display-drivers,mm-sys-kernel/ubwcp,securemsm-kernel/smmu-proxy,video-driver}`
+and `nxp/opensource/driver` are installed next to the kernel's own headers.
+`BUILD.bazel` loads `define_consolidate()`, `define_consolidate_16k()` and
+`define_msm_platforms()` so the Kleaf targets referenced by `xiaomi/define_modules.bzl`
+(e.g. `parrot_perf`, `parrot_consolidate`) resolve. `drivers/devfreq/governor.h`
+and `mm/slab.h` are exported as unsafe headers for out-of-tree modules.
+`build.config.gki_consolidate.aarch64`, `arch/arm64/configs/consolidate.fragment`
+and `certs/qcom_x509.genkey` come from the 6.6 reference tree; the fragment's
+`CONFIG_LOCALVERSION="-debug"` only affects the debug consolidate variant and
+does not change the shipping `perf` config.
+
 ## License
 
 GPL-2.0, as defined by the Linux kernel. See `COPYING` and `LICENSES/`.
