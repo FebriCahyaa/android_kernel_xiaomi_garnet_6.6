@@ -147,6 +147,28 @@ same three properties so userspace can verify the effective mode with one
 read. It does not change charging behaviour; the app falls back to the
 individual nodes if the attribute is absent.
 
+## Garnet Unified Memory Management (UMM)
+
+`arch/arm64/configs/consolidate.fragment` now enables `CONFIG_SWAP`,
+`CONFIG_ZRAM=y` with the LZ4 default compressor, `CONFIG_ZRAM_WRITEBACK`,
+`CONFIG_ZSMALLOC` and `CONFIG_DMABUF_SYSFS_STATS`. LZ4 keeps reclaim cheap on
+the LPDDR4X memory; writeback lets cold zram pages move to the UFS 2.2
+controller when userspace explicitly configures a backing device.
+
+`scripts/garnet_umm_setup.sh` is a manual helper (never run at boot). It
+validates that the chosen block device exists and is not mounted, then writes
+`backing_dev`, `writeback_limit` and `writeback_limit_enable`. It also supports
+`disable` and `status`. This keeps a typo from turning a mounted partition
+into swap.
+
+The same fragment previously set `CONFIG_LOCALVERSION="-debug"`, which overrode
+the identity set in `gki_defconfig` because merge_config applies fragments
+last. It now uses `-ZairenOX-Oz1B` so the release string stays
+`6.6.162-ZairenOX-Oz1B`.
+
+UMM is our project policy name, not an upstream Linux/Android standard. Its
+contract is documented in `UMM.md`; no upstream file was re-labelled as such.
+
 ## License
 
 GPL-2.0, as defined by the Linux kernel. See `COPYING` and `LICENSES/`.
