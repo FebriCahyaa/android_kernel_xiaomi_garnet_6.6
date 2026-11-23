@@ -58,6 +58,35 @@ Imported paths:
 - Root/hiding features (`KSU`, `KSU_SUSFS*`, `NOMOUNT`, custom
   `CONFIG_LOCALVERSION`) are intentionally excluded.
 
+## Garnet performance and feature tuning
+
+The following garnet tuning commits were imported from the CLO-derived
+`bp4a-6.6` tree with their original authors and Change-Ids:
+
+- Block layer: flash-oriented `blk-throttle` quantum/slice settings and the
+  matching quantum definitions (`259584a`, `ca98db6`).
+- CPU idle: explicit `CONFIG_CPU_IDLE_GOV_LADDER` / `CONFIG_ARM_CPUIDLE`
+  settings (`51d5388`, `6f5fa17`) and `CONFIG_HZ=250` made explicit
+  (`d0bdbf4`). `HZ_250` is already the arm64 default, so this only records
+  the intended value.
+- Networking: `fq_codel` as the default qdisc and BBR as the default TCP
+  congestion control (`d52f694`, `303ff80`).
+- `CONFIG_NTSYNC=m` (`4f20575`) for Wine NT synchronization primitives.
+- Huawei LZ4KD compression for zram (`e865737`, `d60a9ef`, `6645bade`,
+  `c6d28b5`).
+
+Deliberately not imported as no-ops or out of scope:
+
+- `8ae4aba` (`Tweak cpuidle governor to enter deep C state faster`) adds an
+  unused `performance_multiplier()` helper in both trees, so it has no
+  runtime effect.
+- `20e9f13` (`workqueue: allow creation of workqueues using power efficient
+  wq`) only defines a macro that no caller uses.
+- `bc16bc5` (`defconfig: Optimise for performance`) sets
+  `CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3`, which was removed from kbuild in
+  2022 and is undefined on this 6.6 base as well as on the reference tree.
+  It was reverted here instead of carrying a dead config symbol.
+
 ## License
 
 GPL-2.0, as defined by the Linux kernel. See `COPYING` and `LICENSES/`.
