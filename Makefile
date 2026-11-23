@@ -3,7 +3,7 @@ VERSION = 6
 PATCHLEVEL = 6
 SUBLEVEL = 162
 EXTRAVERSION =
-NAME = Pinguïn Aangedreven
+NAME = ZairenOX
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
