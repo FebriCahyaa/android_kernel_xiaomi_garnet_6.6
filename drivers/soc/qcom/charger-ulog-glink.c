@@ -132,7 +132,7 @@ static void chg_ulog_work(struct work_struct *work)
 
 static void ulog_store(struct chg_ulog_glink_dev *cd, size_t len)
 {
-	char *buf = cd->ulog_buf, *token = NULL;
+	char *buf = cd->ulog_buf;
 
 	if (buf[0] == '\0') {
 		pr_debug("buffer is NULL\n");
@@ -142,15 +142,8 @@ static void ulog_store(struct chg_ulog_glink_dev *cd, size_t len)
 	}
 
 	buf[len - 1] = '\0';
-	if (len >= MAX_MSG_SIZE) {
-		do {
-			token = strsep((char **)&buf, "\n");
-			if (token)
-				pr_debug("%s", token);
-		} while (token);
-	} else {
-		pr_debug("%s", buf);
-	}
+	/* pr_debug() has no Qualcomm IPC message-size limit to split for. */
+	pr_debug("%s", buf);
 }
 
 static void handle_ulog_message(struct chg_ulog_glink_dev *cd,
