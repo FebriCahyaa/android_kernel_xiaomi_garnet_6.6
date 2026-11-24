@@ -55,6 +55,10 @@ Imported paths:
   `static bool` path and gains the vendor enum API alongside it, while
   `drivers/power/reset/qcom-dload-mode.c`, its Kconfig/Makefile entries and
   `include/soc/qcom/minidump.h` come from the CLO-derived tree.
+- The imported PMIC Glink and charger ULOG drivers originally used Qualcomm's
+  `linux/ipc_logging.h`, which is not part of AOSP `kernel/common` 6.6. Their
+  IPC log contexts were replaced with the drivers' existing `pr_debug()` path;
+  no charging or fleet/gauge protocol behaviour was changed.
 - Root/hiding features (`KSU`, `KSU_SUSFS*`, `NOMOUNT`) and the community
   tree's custom `CONFIG_LOCALVERSION` are intentionally excluded. The only
   local version suffix is our own branding, set below.

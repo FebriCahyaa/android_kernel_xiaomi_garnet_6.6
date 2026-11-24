@@ -26,7 +26,7 @@ dan patch device garnet. Tidak ada provider root/hiding (`KSU`, `KSU_SUSFS*`,
 ## Build
 
 Jalur utama adalah `ci-build`, satu implementasi yang dipakai GitHub Actions,
-Harness, dan build lokal:
+Harness, dan build lokal. Dari checkout `ci-build`:
 
 ```sh
 BUILD_PROFILE=garnet-6.6 VARIANTS=default TOOLCHAIN=aosp-sparse \
@@ -73,8 +73,8 @@ Binary kernel GKI **sama** untuk ketiga varian RAM — tidak ada fork kernel per
 kapasitas RAM. Yang membedakan adalah profil userspace (XiaomiParts UMM) dan
 ukuran zram yang ditetapkan skrip vendor saat boot. Kebijakan kernel menjaga
 overhead tetap rendah: LZ4 untuk zram, MGLRU aktif, THP hanya `madvise`, KSM
-tidak dinyalakan, dan tidak ada config debug di jalur `perf` setelah
-penggabungan fragmen.
+tidak dinyalakan, dan fragmen debug `consolidate.fragment` tidak ikut ke jalur
+`perf`.
 
 | RAM | Profil UMM yang disarankan | Swappiness / compaction | Catatan |
 |---|---|---|---|
