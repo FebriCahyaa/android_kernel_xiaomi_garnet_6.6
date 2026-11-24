@@ -1,31 +1,7 @@
 # Upstream merge report
-Mon Nov 23 17:09:41 UTC 2026
+Tue Nov 24 13:55:42 UTC 2026
 ## aosp/android15-6.6-lts
-Merge made by the 'ort' strategy.
- android/abi_gki_aarch64.stg                     |  20 +++++++++
- android/abi_gki_aarch64_zebra                   |   2 +
- android/gki/aarch64/afdo/README.md              |  16 +++----
- android/gki/aarch64/afdo/kernel.afdo            | Bin 4156431 -> 3426960 bytes
- arch/arm64/kvm/hyp/include/hyp/switch.h         |   2 +-
- arch/arm64/kvm/hyp/nvhe/sys_regs.c              |   6 +++
- arch/arm64/mm/contpte.c                         |  53 ++++++++++++++++++++++--
- arch/riscv/kernel/cpufeature.c                  |  23 +++++-----
- drivers/cpufreq/scmi-cpufreq.c                  |   1 +
- drivers/firmware/arm_ffa/driver.c               |  33 +++++++++++++--
- fs/f2fs/data.c                                  |  12 +++++-
- fs/f2fs/sysfs.c                                 |   2 +-
- fs/kernfs/dir.c                                 |   2 +
- include/linux/energy_model.h                    |   2 +-
- mm/huge_memory.c                                |   4 +-
- mm/percpu.c                                     |  18 +++++---
- mm/swapfile.c                                   |   1 +
- net/l2tp/l2tp_core.c                            |  11 ++---
- net/vmw_vsock/virtio_transport_common.c         |   5 +--
- net/wireless/scan.c                             |   2 +-
- sound/virtio/virtio_kctl.c                      |  50 ++++++++++++++++++++++
- sound/virtio/virtio_pcm.h                       |   1 -
- tools/testing/selftests/bpf/progs/dmabuf_iter.c |   2 +-
- 23 files changed, 217 insertions(+), 51 deletions(-)
+Already up to date.
 ## linux-stable/linux-6.6.y
 Auto-merging Documentation/admin-guide/cgroup-v2.rst
 Auto-merging Documentation/admin-guide/kernel-parameters.txt
