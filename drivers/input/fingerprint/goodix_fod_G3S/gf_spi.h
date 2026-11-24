@@ -8,6 +8,7 @@
 
 #include <linux/types.h>
 #include <linux/notifier.h>
+#include <linux/pinctrl/consumer.h>
 /**********************************************************/
 enum FP_MODE {
 	GF_IMAGE_MODE = 0,

@@ -1123,7 +1123,7 @@ static int __init gf_init(void)
 	}
 
 	SPIDEV_MAJOR = status;
-	gf_class = class_create(THIS_MODULE, CLASS_NAME);
+	gf_class = class_create(CLASS_NAME);
 
 	if (IS_ERR(gf_class)) {
 		unregister_chrdev(SPIDEV_MAJOR, gf_driver.driver.name);
