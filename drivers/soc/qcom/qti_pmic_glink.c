@@ -10,7 +10,6 @@
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/idr.h>
-#include <linux/ipc_logging.h>
 #include <linux/list.h>
 #include <linux/module.h>
 #include <linux/of_platform.h>
@@ -23,13 +22,9 @@
 #include <linux/soc/qcom/pdr.h>
 #include <linux/soc/qcom/qti_pmic_glink.h>
 
-#define NUM_LOG_PAGES		10
-
-#define pmic_glink_dbg(pgdev, fmt, ...) \
-	do { \
-		ipc_log_string(pgdev->ipc_log, fmt, ##__VA_ARGS__); \
-		pr_debug(fmt, ##__VA_ARGS__); \
-	} while (0)
+/* AOSP kernel/common has no Qualcomm IPC logging context support. Keep the
+ * driver's diagnostics on the standard kernel debug path instead. */
+#define pmic_glink_dbg(pgdev, fmt, ...) pr_debug(fmt, ##__VA_ARGS__)
 
 /**
  * struct pmic_glink_dev - Top level data structure for pmic_glink device
@@ -37,7 +32,6 @@
  * @dev:		pmic_glink parent device for all child devices
  * @debugfs_dir:	Debugfs directory handle
  * @channel_name:	Glink channel name used by rpmsg device
- * @ipc_log:		ipc logging handle
  * @client_idr:		idr list for the clients
  * @client_lock:	mutex lock when idr APIs are used on client_idr
  * @rpdev_sem:		read-write semaphore to synchronize glink channel
@@ -69,7 +63,6 @@ struct pmic_glink_dev {
 	struct device		*dev;
 	struct dentry		*debugfs_dir;
 	const char		*channel_name;
-	void			*ipc_log;
 	struct idr		client_idr;
 	struct mutex		client_lock;
 	struct rw_semaphore	rpdev_sem;
@@ -661,11 +654,6 @@ static int pmic_glink_probe(struct platform_device *pdev)
 	atomic_set(&pgdev->prev_state, QCOM_SSR_BEFORE_POWERUP);
 	atomic_set(&pgdev->pdr_state, SERVREG_SERVICE_STATE_UNINIT);
 
-	pgdev->ipc_log = ipc_log_context_create(NUM_LOG_PAGES,
-						pgdev->channel_name, 0);
-	if (!pgdev->ipc_log)
-		pr_warn("Error in creating ipc_log\n");
-
 	if (pgdev->subsys_name) {
 		pgdev->ssr_nb.notifier_call = pmic_glink_ssr_notifier_cb;
 		pgdev->subsys_handle = qcom_register_ssr_notifier(
@@ -717,7 +705,6 @@ error_pdr:
 error_service:
 	qcom_unregister_ssr_notifier(pgdev->subsys_handle, &pgdev->ssr_nb);
 error_subsys:
-	ipc_log_context_destroy(pgdev->ipc_log);
 	idr_destroy(&pgdev->client_idr);
 	destroy_workqueue(pgdev->rx_wq);
 	return rc;
@@ -727,7 +714,6 @@ static int pmic_glink_remove(struct platform_device *pdev)
 {
 	struct pmic_glink_dev *pgdev = dev_get_drvdata(&pdev->dev);
 
-	ipc_log_context_destroy(pgdev->ipc_log);
 	pdr_handle_release(pgdev->pdr_handle);
 	qcom_unregister_ssr_notifier(pgdev->subsys_handle, &pgdev->ssr_nb);
 	device_init_wakeup(pgdev->dev, false);

@@ -7,7 +7,6 @@
 
 #include <linux/debugfs.h>
 #include <linux/device.h>
-#include <linux/ipc_logging.h>
 #include <linux/ktime.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
@@ -27,8 +26,6 @@
 #define LOG_DEFAULT_TIME_MS		1000
 
 #define MAX_ULOG_SIZE			8192
-#define NUM_LOG_PAGES			10
-#define NUM_INIT_LOG_PAGES		8
 
 struct set_ulog_prop_req_msg {
 	struct pmic_glink_hdr		hdr;
@@ -50,8 +47,6 @@ struct chg_ulog_glink_dev {
 	struct device			*dev;
 	struct pmic_glink_client	*client;
 	struct dentry			*debugfs_dir;
-	void				*ipc_log;
-	void				*ipc_init_log;
 	struct mutex			lock;
 	struct completion		ack;
 	struct delayed_work		ulog_work;
@@ -135,8 +130,7 @@ static void chg_ulog_work(struct work_struct *work)
 					msecs_to_jiffies(cd->log_time_ms));
 }
 
-static void ulog_store(struct chg_ulog_glink_dev *cd, void *ipc_ctxt,
-			size_t len)
+static void ulog_store(struct chg_ulog_glink_dev *cd, size_t len)
 {
 	char *buf = cd->ulog_buf, *token = NULL;
 
@@ -152,10 +146,10 @@ static void ulog_store(struct chg_ulog_glink_dev *cd, void *ipc_ctxt,
 		do {
 			token = strsep((char **)&buf, "\n");
 			if (token)
-				ipc_log_string(ipc_ctxt, "%s", token);
+				pr_debug("%s", token);
 		} while (token);
 	} else {
-		ipc_log_string(ipc_ctxt, "%s", buf);
+		pr_debug("%s", buf);
 	}
 }
 
@@ -163,8 +157,6 @@ static void handle_ulog_message(struct chg_ulog_glink_dev *cd,
 				struct get_ulog_resp_msg *resp_msg,
 				size_t len)
 {
-	void *ipc_ctxt;
-
 	if (len != sizeof(*resp_msg)) {
 		pr_err("Expected data length: %zu, received: %zu\n",
 				sizeof(*resp_msg), len);
@@ -172,10 +164,7 @@ static void handle_ulog_message(struct chg_ulog_glink_dev *cd,
 	}
 
 	memcpy(cd->ulog_buf, resp_msg->buf, sizeof(cd->ulog_buf));
-	ipc_ctxt = (resp_msg->hdr.opcode == GET_CHG_INIT_ULOG_REQ)
-			? cd->ipc_init_log : cd->ipc_log;
-
-	ulog_store(cd, ipc_ctxt, len - sizeof(resp_msg->hdr));
+	ulog_store(cd, len - sizeof(resp_msg->hdr));
 }
 
 static int chg_ulog_callback(void *priv, void *data, size_t len)
@@ -413,22 +402,6 @@ static int chg_ulog_probe(struct platform_device *pdev)
 		return dev_err_probe(cd->dev, -EINVAL, "Error in creating debugfs\n");
 	}
 
-	cd->ipc_log = ipc_log_context_create(NUM_LOG_PAGES, "charger_ulog", 0);
-	if (!cd->ipc_log) {
-		pmic_glink_unregister_client(cd->client);
-		debugfs_remove_recursive(cd->debugfs_dir);
-		return dev_err_probe(cd->dev, -ENODEV, "Error in creating charger_ulog\n");
-	}
-
-	cd->ipc_init_log = ipc_log_context_create(NUM_INIT_LOG_PAGES,
-						"charger_ulog_init", 0);
-	if (!cd->ipc_init_log) {
-		pmic_glink_unregister_client(cd->client);
-		ipc_log_context_destroy(cd->ipc_log);
-		debugfs_remove_recursive(cd->debugfs_dir);
-		return dev_err_probe(cd->dev, -ENODEV, "Error in creating charger_ulog_init\n");
-	}
-
 	return 0;
 }
 
@@ -444,8 +417,6 @@ static int chg_ulog_remove(struct platform_device *pdev)
 	if (rc < 0)
 		pr_err("Error unregistering from pmic_glink, rc=%d\n", rc);
 
-	ipc_log_context_destroy(cd->ipc_log);
-	ipc_log_context_destroy(cd->ipc_init_log);
 
 	return 0;
 }
