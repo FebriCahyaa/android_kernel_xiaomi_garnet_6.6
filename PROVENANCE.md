@@ -194,6 +194,24 @@ removed without changing the tuning values or the original author credit.
 UMM is our project policy name, not an upstream Linux/Android standard. Its
 contract is documented in `UMM.md`; no upstream file was re-labelled as such.
 
+## AOSP Clang 6.6 build compatibility fixes
+
+The imported vendor drivers were written against Qualcomm kernels that carried
+`linux/ipc_logging.h` and older I2C callbacks. The following local fixes keep
+them building against AOSP `kernel/common` 6.6 with Clang `r510928`:
+
+- `b6e359c4b8dd` — replaced the missing `ipc_logging` contexts in
+  `drivers/soc/qcom/qti_pmic_glink.c` and
+  `drivers/soc/qcom/charger-ulog-glink.c` with the drivers' existing
+  `pr_debug()` path.
+- `e9b34b67a386` — `MAX_MSG_SIZE` came from that missing Qualcomm header;
+  `charger-ulog-glink.c` no longer splits ULOG text for an IPC size limit that
+  `pr_debug()` does not have.
+- `drivers/regulator/wl2866d-n16.c` now prints the regulator type string
+  instead of the numeric enum, and its `probe`/`remove` callbacks use the
+  one-argument `i2c_driver` signatures from Linux 6.6. No regulator behaviour
+  or voltage setting changed.
+
 ## License
 
 GPL-2.0, as defined by the Linux kernel. See `COPYING` and `LICENSES/`.
