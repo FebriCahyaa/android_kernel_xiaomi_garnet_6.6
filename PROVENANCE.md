@@ -211,6 +211,9 @@ them building against AOSP `kernel/common` 6.6 with Clang `r510928`:
   instead of the numeric enum, and its `probe`/`remove` callbacks use the
   one-argument `i2c_driver` signatures from Linux 6.6. No regulator behaviour
   or voltage setting changed.
+- `drivers/input/fingerprint/goodix_fod_G3S` now includes the pinctrl consumer
+  API explicitly and uses the single-argument `class_create()` from Linux 6.6.
+  Fingerprint behaviour and FOD device nodes are unchanged.
 
 ## License
 
