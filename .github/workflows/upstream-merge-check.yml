@@ -1,0 +1,88 @@
+name: Upstream merge check
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Branch to update
+        required: false
+        default: merge/upstream
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge-check:
+    if: github.ref_name == 'merge/upstream' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.target_branch || github.ref }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add remotes
+        run: |
+          git remote add aosp https://android.googlesource.com/kernel/common || git remote set-url aosp https://android.googlesource.com/kernel/common
+          git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git || git remote set-url linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          git remote add clo https://git.codelinaro.org/clo/la/kernel/msm-6.6.git || git remote set-url clo https://git.codelinaro.org/clo/la/kernel/msm-6.6.git
+          git remote add qcom https://github.com/qualcomm-linux/kernel.git || git remote set-url qcom https://github.com/qualcomm-linux/kernel.git
+          git fetch --no-tags --prune aosp android15-6.6-lts || true
+          git fetch --no-tags --prune linux-stable linux-6.6.y || true
+          git fetch --no-tags --prune clo || true
+          git fetch --no-tags --prune qcom || true
+
+      - name: Merge upstreams
+        id: merge
+        shell: bash
+        run: |
+          set +e
+          STATUS=0
+          REPORT=merge-report.md
+          echo "# Upstream merge report" > "$REPORT"
+          date -u >> "$REPORT"
+          for name in aosp/android15-6.6-lts linux-stable/linux-6.6.y; do
+            echo "## $name" >> "$REPORT"
+            if git rev-parse --verify "$name" >/dev/null 2>&1; then
+              git merge --no-edit --no-ff "$name" >>"$REPORT" 2>&1
+              RC=$?
+              if [ $RC -ne 0 ]; then
+                echo "merge failed: $name" >> "$REPORT"
+                git merge --abort || true
+                STATUS=1
+              fi
+            else
+              echo "remote ref not found" >> "$REPORT"
+            fi
+          done
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Apply fix patches
+        if: always()
+        run: |
+          shopt -s nullglob
+          for p in .github/patches/*.patch; do
+            echo "Applying $p"
+            git apply --3way "$p" || git apply --reject --whitespace=fix "$p" || true
+          done
+
+      - name: Create PR
+        if: always()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/merge-upstream
+          base: merge/upstream
+          title: "merge/upstream: automated upstream merge check"
+          body-path: merge-report.md
+          commit-message: "merge/upstream: automated upstream merge check"
+          labels: merge-automation,automated-pr
