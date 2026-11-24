@@ -215,6 +215,20 @@ them building against AOSP `kernel/common` 6.6 with Clang `r510928`:
   API explicitly and uses the single-argument `class_create()` from Linux 6.6.
   Fingerprint behaviour and FOD device nodes are unchanged.
 
+## FinaSU variant source
+
+- Upstream: https://github.com/LyraVoid/FinaSU
+- Pinned commit: `a85c03ab6be57fd1a81a6d345eb5aa8275652b42`
+- Imported paths: `/kernel` → `drivers/kernelsu/` and `/uapi` →
+  `drivers/kernelsu/include/uapi/`.
+
+The original `feature/finasu` integration used a symlink into a local
+`/tmp/FinaSU` checkout, which cannot exist in CI or on a device build. The
+symlink was replaced with the pinned source files so the branch is
+self-contained. `drivers/Kconfig` and `drivers/Makefile` keep the existing
+`CONFIG_KSU` wiring from the upstream FinaSU Kconfig; no root behaviour was
+changed.
+
 ## License
 
 GPL-2.0, as defined by the Linux kernel. See `COPYING` and `LICENSES/`.
