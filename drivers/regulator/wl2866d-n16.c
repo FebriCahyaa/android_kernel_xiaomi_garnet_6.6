@@ -363,7 +363,7 @@ static int wl2866d_register_ldo(struct wl2866d_regulator *wl2866d_reg,
 		wl2866d_reg->type = VDD_TYPE_AVDD;
 	else {
 		wl2866d_err(wl2866d_reg, "invalid regulator type %s\n",
-			    wl2866d_reg->type);
+			    vdd_type);
 		return -EINVAL;
 	}
 
@@ -417,8 +417,7 @@ static int wl2866d_register_ldo(struct wl2866d_regulator *wl2866d_reg,
 	return 0;
 }
 
-static int wl2866d_pmic_probe(struct i2c_client *client,
-			      const struct i2c_device_id *id)
+static int wl2866d_pmic_probe(struct i2c_client *client)
 {
 	struct wl2866d_pmic *chip;
 	struct wl2866d_regulator *wl2866d_reg;
@@ -501,11 +500,9 @@ static int wl2866d_pmic_probe(struct i2c_client *client,
 	return rc;
 }
 
-static int wl2866d_pmic_remove(struct i2c_client *client)
+static void wl2866d_pmic_remove(struct i2c_client *client)
 {
 	i2c_set_clientdata(client, NULL);
-
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
