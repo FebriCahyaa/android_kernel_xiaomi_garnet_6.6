@@ -175,7 +175,17 @@ LineageOS 24.0 device tree, which applies `vendor/garnet_GKI.config` last.
 For CPU behaviour all three files also enable `CONFIG_CPU_FREQ_GOV_SCHEDUTIL`,
 `CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL` and
 `CONFIG_CPU_FREQ_GOV_PERFORMANCE`. `qcom-cpufreq-hw` reads the EPSS LUT from
-firmware, so no CPU frequency value is hard-coded in DTS or config.
+firmware, so no CPU frequency value is hard-coded in DTS or config. The same
+files now enable `CONFIG_CPU_FREQ_THERMAL`, which on arm64 selects
+`CONFIG_SCHED_THERMAL_PRESSURE`. On SM7435 the pressure signal is supplied by
+`qcom-cpufreq-hw` (LMH throttling), so EAS can account for thermally capped
+capacity without changing any vendor thermal limits or trip points.
+
+The imported flash-oriented `blk-throttle` quantum values (16 and 64) are kept
+as the `THROTL_GRP_QUANTUM` / `THROTL_QUANTUM` macro defaults. The older
+commit had also left two now-unused `static int` variables behind, which
+Clang `r510928` rejects with `-Werror,-Wunused-variable`; those variables were
+removed without changing the tuning values or the original author credit.
 
 UMM is our project policy name, not an upstream Linux/Android standard. Its
 contract is documented in `UMM.md`; no upstream file was re-labelled as such.
