@@ -20,6 +20,9 @@ int check_version(const struct load_info *info,
 	unsigned int i, num_versions;
 	struct modversion_info *versions;
 
+	if (IS_ENABLED(CONFIG_GARNET_ROM_MODULE_COMPAT))
+		return 1;
+
 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
 	if (!crc)
 		return 1;
@@ -80,6 +83,9 @@ int check_modstruct_version(const struct load_info *info,
 int same_magic(const char *amagic, const char *bmagic,
 	       bool has_crcs)
 {
+	if (IS_ENABLED(CONFIG_GARNET_ROM_MODULE_COMPAT))
+		return 1;
+
 	if (has_crcs) {
 		amagic += strcspn(amagic, " ");
 		bmagic += strcspn(bmagic, " ");

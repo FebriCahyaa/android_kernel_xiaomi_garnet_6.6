@@ -22,6 +22,19 @@ menuconfig MODULES
 
 if MODULES
 
+config GARNET_ROM_MODULE_COMPAT
+	bool "Accept module ABI metadata from other garnet 6.6 ROM builds"
+	depends on MODULES
+	default n
+	help
+	  Skip vermagic and CONFIG_MODVERSIONS CRC checks when loading modules.
+	  Garnet 6.6 ROMs ship vendor modules built from different kernel trees;
+	  their metadata can disagree even though the exported symbol names and
+	  layouts used by those modules match. This option lets one boot Image
+	  load modules from any supported ROM without replacing vendor
+	  partitions. Only enable it for a compatibility kernel: a genuine ABI
+	  break will no longer be caught at load time.
+
 config MODULE_DEBUGFS
 	bool
 

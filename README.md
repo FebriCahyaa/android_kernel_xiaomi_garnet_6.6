@@ -104,6 +104,12 @@ adb shell dumpsys meminfo | head -n 20
 - Kontributor dan peran integrasi tercantum di [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 - Varian `kernelsu-next`, `kernelsu-next-susfs`, dan `finasu` adalah branch
   seed yang dipakai `ci-build`, bukan bagian dari branch `garnet-6.6`.
+- Branch `feature/rom-module-compat` menambah `CONFIG_GARNET_ROM_MODULE_COMPAT`
+  untuk memakai source ini pada ROM garnet 6.6 lain. Saat opsi ini aktif,
+  loader modul tidak menolak perbedaan `vermagic` dan CRC `CONFIG_MODVERSIONS`,
+  sehingga modul vendor ROM mana pun bisa dipakai tanpa mengganti partisi
+  vendor/dlkm. Tetap nonaktifkan untuk daily driver; profil
+  `garnet-6.6-romcompat` di `ci-build` yang mengaktifkannya.
 - `VINTF target-level="7"` mengikuti LineageOS 24.0; requalifikasi VINTF penuh
   dan full ROM build/boot test masih perlu dilakukan pada tree lengkap.
 
